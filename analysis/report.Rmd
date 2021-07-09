@@ -33,6 +33,7 @@ options(tidyverse.quiet = TRUE)
 
 
 # Data Pipeline
+The Targets package is a data pipeline toolkit allowing dependency awareness and rerunning of code that is downstream from dependency changes and nothing more.
 
 The targets package `visnetwork()` function output shows links (dependencies) between functions and targets (input files, intermediate data transformations, model objects, plots and tables etc). Functions are shown as triangles and targets are shown as circles. Fill color indicates whether or not upstream dependencies are 'Up to date' (green) or 'Outdated' (blue). Only the downstream dependencies of outdated targets or functions will be re-evaluated when the workflow is rerun using tar_make().
 
@@ -42,6 +43,7 @@ tar_visnetwork()
 ```
 
 # Load targets
+Once the targets are defined, any rmd within the project directory can access them.
 
 ```{r load-targets}
 tar_load(cYear)
