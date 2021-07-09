@@ -5,13 +5,20 @@ navbar:
   left:
   - text: Home
     href: index.html
+  - text: Measurability
+    href: report.html
   - text: About
     href: about.html
   - text: License
     href: license.html
 output:
   workflowr::wflow_html:
+    code_folding: hide
+    fig_caption: yes
     toc: yes
-    toc_float: yes
+    toc_depth: 5
+    toc_float:
+     collapsed: no
+     smooth_scroll: yes
     theme: cosmo
     highlight: textmate

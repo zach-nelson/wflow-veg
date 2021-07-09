@@ -1,0 +1,229 @@
+---
+title: "Green Book Section I.C.1.a: Determining Measurability"
+subtitle: "BOX I.C.I.a.ii. Transects for monitoring vegetation response to pumping"
+author: "Water Department - County of Inyo"
+date: "7/8/2021"
+output: 
+ html_document: 
+   code_folding: hide
+   fig_caption: yes
+   toc: yes
+   toc_depth: 5
+   toc_float:
+     collapsed: no
+     smooth_scroll: yes
+editor_options: 
+  chunk_output_type: inline
+---
+
+# BOX I.C.I.a.ii. Transects for monitoring vegetation response to pumping
+  
+
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+library(targets)
+library(tidyverse)
+library(rmarkdown)
+library(DT)
+library(htmlwidgets)
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+options(tidyverse.quiet = TRUE)
+```
+
+
+
+# Data Pipeline
+
+The targets package `visnetwork()` function output shows links (dependencies) between functions and targets (input files, intermediate data transformations, model objects, plots and tables etc). Functions are shown as triangles and targets are shown as circles. Fill color indicates whether or not upstream dependencies are 'Up to date' (green) or 'Outdated' (blue). Only the downstream dependencies of outdated targets or functions will be re-evaluated when the workflow is rerun using tar_make().
+
+
+```{r visnetwork}
+tar_visnetwork()
+```
+
+# Load targets
+
+```{r load-targets}
+tar_load(cYear)
+tar_load(icwd_ladwp_bind)
+tar_load(lpt_updated_master)
+tar_load(transects)
+
+tar_load(parcels_deltas)#parcel-year-deltas
+tar_load(parcel_year_meta_2samp_results)
+tar_load(parcel_year_meta_1samp_results)
+tar_load(parcel_year_meta_combined_results)
+tar_load(deltas_ttest_att)
+
+tar_load(wellcont_means_rarefied)
+tar_load(plot_wellcontrol)
+
+tar_load(plot_1sample_timeseries)
+tar_load(plot_2sample_timeseries)
+tar_load(parcel_datatable)
+
+tar_load(rs_pfix)
+tar_load(dtw_pfix)
+
+tar_load(attributes_reinv)
+```
+
+# Parcel Attributes
+```{r parcel-attributes}
+attributes_reinv%>%
+  datatable(extensions = c('Buttons','FixedColumns'),
+            filter = c("top"),
+            options = list(
+              dom = 'Bfrtip',
+              buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+              scrollX = TRUE,
+              fixedColumns = list(leftColumns = 2, rightColumns = 0),
+              pageLength = 5, 
+              autoWidth = TRUE)
+            )
+```
+# Current year data
+```{r cyr-tran-species, eval=FALSE}
+icwd_ladwp_bind %>% filter(Cover > 0)%>%
+  datatable(extensions = c('Buttons','FixedColumns'),
+            filter = c("top"),
+            options = list(
+              dom = 'Bfrtip',
+              buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+              scrollX = TRUE,
+              fixedColumns = list(leftColumns = 2, rightColumns = 0),
+              pageLength = 5, 
+              autoWidth = TRUE)
+            )
+```
+# Total combined data
+
+```{r tran-species, eval=FALSE}
+lpt_updated_master %>% filter(Cover > 0)%>% 
+  datatable(extensions = c('Buttons','FixedColumns'),
+            filter = c("top"),
+            options = list(
+              dom = 'Bfrtip',
+              buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+              scrollX = TRUE,
+              fixedColumns = list(leftColumns = 2, rightColumns = 0),
+              pageLength = 5, 
+              autoWidth = TRUE)
+            )
+
+```
+# Aggregated to transect cover type
+```{r tran-ftype, eval=FALSE}
+
+transects%>% 
+  datatable(extensions = c('Buttons','FixedColumns'),
+            filter = c("top"),
+            options = list(
+              dom = 'Bfrtip',
+              buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+              scrollX = TRUE,
+              fixedColumns = list(leftColumns = 3, rightColumns = 0),
+              pageLength = 5, 
+              autoWidth = TRUE)
+            )
+```
+# Remote sensing - Landsat
+earth engine derived
+ee-tools python api
+```{r landsat}
+rs_pfix %>% mutate(across(NDVI_SUR:sd.ndvi, round, 2)) %>% 
+  mutate(across(PPT:sd.ppt, round, 0)) %>% 
+  datatable(extensions = c('Buttons','FixedColumns'),
+            filter = c("top"),
+            options = list(
+              dom = 'Bfrtip',
+              buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+              scrollX = TRUE,
+              fixedColumns = list(leftColumns = 2, rightColumns = 0),
+              pageLength = 5, 
+              autoWidth = TRUE)
+            )
+```
+ 
+ 
+# Parcel Functional Type Cover
+
+data structure - unique parcel-year combinations on each row represent transect-level averages to plant functional types and totals.
+
+table shown to illustrate data structure
+```{r parcel-deltas-table}
+parcels_deltas %>% 
+  select(Parcel, Year,Cover, Cover.Delta, Grass, Grass.Delta, Shrub, Shrub.Delta) %>% 
+  mutate(across(Cover:Shrub.Delta, round, 1)) %>% 
+  datatable(extensions = c('Buttons','FixedColumns'),
+            filter = c("top"),
+            options = list(
+              dom = 'Bfrtip',
+              buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+              scrollX = TRUE,
+              fixedColumns = list(leftColumns = 2, rightColumns = 0),
+              pageLength = 5, 
+              autoWidth = TRUE)
+            )
+# %>% formatRound(c('july','oct'),2)
+# deltas
+```
+
+
+
+
+
+
+
+# Combined ttest results
+
+```{r parcel-yr-ttest-cyear}
+parcel_year_meta_combined_results %>% 
+  filter(Year.x == cYear) %>% 
+  select(Parcel,significance,  estimate, estimate1, estimate2, method,n.x, n.y, statistic, p.value) %>%  
+  mutate(across(estimate:estimate2, round, 0)) %>%
+  mutate(across(statistic:p.value, round, 3)) %>% 
+  datatable(extensions = c('Buttons','FixedColumns'),
+            filter = c("top"),
+            options = list(
+              dom = 'Bfrtip',
+              buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+              scrollX = TRUE,
+              fixedColumns = list(leftColumns = 2, rightColumns = 0),
+              pageLength = 5, 
+              autoWidth = TRUE)
+            )
+
+
+# ,filter = c("top"),options = list(
+  # pageLength = 5, autoWidth = TRUE)) 
+
+
+# est, est1, est2, stat, pval, par, clow, chigh, method, alt, sig
+```
+
+
+# Parcel difference from baseline
+
+
+```{r parcel-delta-sig-table}
+parcel_datatable
+```
+
+# Graph two-sample ttest
+```{r 2sample-graph}
+plot_2sample_timeseries
+```
+
+
+# Graph one-sample ttest
+```{r 1sample-graph}
+plot_1sample_timeseries
+```
+
+# Wellfield Control Rarefield Graph   
+
+```{r plot-wellcontrol}
+plot_wellcontrol
+```
+

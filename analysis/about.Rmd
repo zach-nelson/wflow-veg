@@ -7,4 +7,5 @@ editor_options:
   chunk_output_type: console
 ---
 
-Describe your project.
+This webpage documents methods used to implement statistical analyses following BOX I.C.I.a.ii. "Transects for monitoring vegetation response to pumping". This analysis is updated on an annual basis in the fall.
+
