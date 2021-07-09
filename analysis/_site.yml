@@ -1,7 +1,7 @@
-name: "wflow-veg"
+name: wflow-veg
 output_dir: ../docs
 navbar:
-  title: "wflow-veg"
+  title: wflow-veg
   left:
   - text: Home
     href: index.html
@@ -11,6 +11,10 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  right:
+  - icon: fa-github
+    text: Source code
+    href: https://github.com/zach-nelson/wflow-veg
 output:
   workflowr::wflow_html:
     code_folding: hide
@@ -18,7 +22,7 @@ output:
     toc: yes
     toc_depth: 5
     toc_float:
-     collapsed: no
-     smooth_scroll: yes
+      collapsed: no
+      smooth_scroll: yes
     theme: cosmo
     highlight: textmate
