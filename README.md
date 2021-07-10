@@ -4,32 +4,4 @@ A [workflowr][] project.
 
 [workflowr]: https://github.com/jdblischak/workflowr
 
-## Quick start workflowr
-
-```
-library("workflowr")
-
-# Configure Git (only need to do once per computer)
-wflow_git_config(user.name = "Full Name", user.email = "email@domain")
-
-# Start a new workflowr project
-From local directory e.g. C:/Dropbox/Rprojects
-
-wflow_start("wflow-veg")
-
-# Build the site
-wflow_build()
-
-# Publish the site, i.e. version the source code and HTML results
-wflow_publish("analysis/*", "Start my new project")
-
-```
-
-## Quick start targets
-In the root directory of the workflowr project, create a `_targets.R` script.
-
-```
-tar_make()
-```
-creates a `_targets` directory that will store the targets from the data pipeline. The .rmd files from the analysis folder now have access to targets through tar_load() or tar_read().
-
+This repository contains a `targets` data pipeline within a `workflowr` project. The pipeline reads in line point data from two agencies, merges after processing and appends to the master file. Further summaries are computed and statistical tests of vegetation change are conducted and displayed in tables and maps. This pipeline makes transparent how the measurability analysis is currently carried out for section I.C.1.a. of the Green Book, Determining Measurability, an annual activity of the Long Term Water Agreement. Specifically methods described in Box I.C.1.a.ii are used in the pipeline to formalize a reproducible process for the Technical Group's annual evaluation.
