@@ -13,7 +13,7 @@ output:
      collapsed: no
      smooth_scroll: yes
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 
@@ -1524,21 +1524,7 @@ tmap_save(map,paste0('output/',cYear,'_',wf,'map.png'))
 
 ## `workflowr`
 Once the targets are defined in the `_targets.R` script, running tar_make() stores the targets in the `_targets` subdirectory to the root of the project, where the .Rproj is located. Now any `.Rmd` anywhere within the project directory can access these targets made from the dependency-aware pipeline. The default `workflowr` project directory encourages `.Rmd` files to be located in the `analysis` directory and these `analysis/file.Rmd` can access the hard-earned data products from the pipeline, and `workflowr::wflow_build()` will render the `.Rmd` to an html website in the `docs` directory that can be version controlled on github and hosted on github-pages. workflowr research websites include seven reproducibility checks including that the output was derived from a 'committed' file to version control, the R environment was empty, seed set, session information recorded, no cache, file paths are relative, and which repository version relates to the website.
-```{r wflow-steps,eval=FALSE}
-wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rmd","analysis/index.Rmd","_targets.R","code/R/functions.R"),
-              "Added maps of sig veg change to reports rmd, update map function, functions to enumerate parcels/transects per year.")
 
-wflow_publish(c("analysis/report.Rmd"),
-              "Added maps of sig veg change to reports rmd, update map function.")
-
-wflow_publish(c("analysis/report.Rmd"),
-              "update Rmd.")
-
-
-# wflow_git_commit("analysis/report.Rmd")
-
-git push -u origin master
-```
 
 
 ```{r load-targets}
@@ -1717,33 +1703,40 @@ Distillation of the effect size of parcel vegetation change (Cover.Delta, Grass.
 
 ## Laws
 ```{r}
-knitr::include_graphics(here(panel_map_lw))
+knitr::include_graphics(panel_map_lw, error = FALSE)
+# knitr::include_graphics(here(panel_map_lw))
+
 ```
 
 ## Big Pine
 ```{r}
 # library(knitr)
-knitr::include_graphics(here(panel_map_bp))
+knitr::include_graphics(panel_map_bp, error = FALSE)
+# knitr::include_graphics(here(panel_map_bp))
 ```
 
 ## Taboose-Aberdeen
 ```{r}
-knitr::include_graphics(here(panel_map_ta))
+knitr::include_graphics(panel_map_ta, error = FALSE)
+# knitr::include_graphics(here(panel_map_ta))
 ```
 
 ## Thibaut-Sawmill
 ```{r}
-knitr::include_graphics(here(panel_map_ts))
+knitr::include_graphics(panel_map_ts, error = FALSE)
+# knitr::include_graphics(here(panel_map_ts))
 ```
 
 ## Symmes-Shepherd
 ```{r}
-knitr::include_graphics(here(panel_map_ss))
+knitr::include_graphics(panel_map_ss, error = FALSE)
+# knitr::include_graphics(here(panel_map_ss))
 ```
 
 ## Bairs-George
 ```{r}
-knitr::include_graphics(here(panel_map_bg))
+knitr::include_graphics(panel_map_bg, error = FALSE)
+# knitr::include_graphics(here(panel_map_bg))
 ```
 
 

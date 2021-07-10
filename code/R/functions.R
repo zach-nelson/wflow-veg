@@ -1279,10 +1279,14 @@ panel_map<- function(cYear,parcels_shp_ttest, wf, or,streams,canals,laa,lakes, m
   #
 map <-tmap_arrange(tmgrass, tmgrassd,tmcov,tmcovd,ncol=2)
 
-tmap_save(map,paste0('output/',cYear,'_',wf,'map.png'))
-
-  return(paste0('output/',cYear,'_',wf,'map.png'))
-
+tmap_save(map,paste0('docs/assets/',cYear,'_',wf,'map.png'))
+# save images in docs/assets so that workflowr website will be
+# able to access the images. This might all be do to the tmap_arrange
+# not producing an object compatible with target that can be called with
+#tar_read()
+  return(paste0('assets/',cYear,'_',wf,'map.png'))
+# return the path to the images with assets as the root for website in docs
+# directory.
   # tmap_arrange()
   # tmap_arrange(tmcov,tmcovd,tmgrass,tmgrassd)
   # tmap_arrange(tmgrass,tmgrassd)
