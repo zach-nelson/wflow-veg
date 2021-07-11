@@ -389,8 +389,8 @@ Section I.C of the Green Book describes the measurable, attributable, and signif
 
 The list of parcels exhibiting measurable and persistent changes identified in this report meet the criteria for the Technical Group to evaluate the cause(s) of the apparent changes from baseline vegetation goals.
 
-```{r plot-wellcontrol-boxplot2}
-boxplot.w.c
+```{r datatable-chronic2}
+parcel_datatable_chronic
 ```
 
 Section I.C.1.b. of the Green Book, 'Determining Attributability', describes,
