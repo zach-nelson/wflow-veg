@@ -1109,7 +1109,7 @@ plot_2samptest_timeseries <- function(data,cYear,parcel.select){
 #' @export
 #'
 #' @examples
-join_summaries <- function(parcels_deltas,attributes_pfix, parcel_year_meta_combined_results, cYear){
+join_summaries <- function(parcels_deltas,attributes_pfix, parcel_year_meta_combined_results, parcel_test_sums, cYear){
 
 deltas <- parcels_deltas %>%
   filter(Year == cYear) %>%
@@ -1121,13 +1121,15 @@ test <- parcel_year_meta_combined_results %>%
 
 par.delta.test.att <- deltas %>%
   left_join(test, by = 'Parcel') %>%
-  left_join(attributes_pfix, by = 'Parcel')
+  left_join(attributes_pfix, by = 'Parcel') %>%
+  left_join(parcel_test_sums, by = 'Parcel')
 
 # datatable(par.delta.test.att)
 return(par.delta.test.att)
 
 }
 
+# add sig.counter,max.run, sum.sig, n
 parcel_data_table <- function(deltas_ttest_att,cYear){
   table <- deltas_ttest_att %>% mutate(p.value = round(p.value,3)) %>%
     filter(!Parcel %in% c("FSL044")) %>%
@@ -1147,6 +1149,36 @@ parcel_data_table <- function(deltas_ttest_att,cYear){
               # caption = paste("Baseline vs",cYear,"statistical significance summary."
 
               )
+
+
+  # %>% htmlwidgets::saveWidget('parcel-summary.html')
+
+  # return("parcel-summary.html")
+  return(table)
+}
+
+# filter the main table further for a persistently significant deviation.
+# I should probably just create another target for a highlighted list for
+# executive summary and wrap the datatable options into a table function.
+
+parcel_data_table_chronic <- function(deltas_ttest_att,cYear){
+  table <- deltas_ttest_att %>% filter(significance == 'significant', Type == 'W') %>% mutate(p.value = round(p.value,3)) %>%
+    filter(!Parcel %in% c("FSL044")) %>%
+    select(Parcel,Cover.Delta, sig.counter, sum.sig,max.run,n,method, GB_TYPE,Holland,Grass.Delta, Shrub.Delta,
+           pGrass,pShrub,Cover,Grass,Shrub) %>%
+    datatable(filter = 'top',
+              options = list(
+                dom = 'Blfrtip',
+                buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                scrollX = TRUE,
+                fixedColumns = list(leftColumns = 2, rightColumns = 0),
+                pageLength = 5,
+                autoWidth = TRUE,
+                colReorder = TRUE)
+              # ,
+              # caption = paste("Baseline vs",cYear,"statistical significance summary."
+
+    )
 
 
   # %>% htmlwidgets::saveWidget('parcel-summary.html')
@@ -1293,3 +1325,25 @@ tmap_save(map,paste0('docs/assets/',cYear,'_',wf,'map.png'))
 
 }
 
+bindttest_count_sig_runs <- function(data2samp, data1samp){
+  bound <- bind_rows(data2samp,data1samp)
+
+  count.runs <- bound  %>%
+    mutate(indicator = case_when(
+      significance == 'significant'~1,
+      significance == 'ns'~0)) %>%
+    group_by(Parcel, grp = with(rle(indicator), rep(seq_along(lengths), lengths))) %>%
+    mutate(counter = seq_along(grp)) %>%
+    ungroup() %>%
+    select(-grp) %>% mutate(sig.counter = indicator*counter)
+
+
+}
+
+parcel_testadd_sums <- function(data){
+  data %>%
+  group_by(Parcel) %>%
+  summarise(n = n(),
+            sum.sig = sum(indicator),
+            max.run = max(sig.counter))
+}

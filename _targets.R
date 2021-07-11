@@ -111,16 +111,18 @@ tar_target(n_transects_sampled, count_transects_cyear(lpt_updated_master,cYear))
 
   tar_target(parcel_year_meta_2samp_results, two_sample_ttest(parcel_year_meta_2samp)),
   tar_target(parcel_year_meta_1samp_results, one_sample_ttest(parcel_year_meta_1samp)),
-  tar_target(parcel_year_meta_combined_results, bind_rows(parcel_year_meta_2samp_results,parcel_year_meta_1samp_results)),
+  tar_target(parcel_year_meta_combined_results, bindttest_count_sig_runs(parcel_year_meta_2samp_results,parcel_year_meta_1samp_results)),
+  tar_target(parcel_test_sums, parcel_testadd_sums(parcel_year_meta_combined_results)),
 
   tar_target(parcel_select_1sample, c("IND026")),
   tar_target(parcel_select_2sample, c("BLK094")),
   tar_target(plot_2sample_timeseries, plot_2samptest_timeseries(parcel_year_meta_2samp_results,cYear,parcel_select_2sample)),
   tar_target(plot_1sample_timeseries, plot_1samptest_timeseries(parcel_year_meta_1samp_results,cYear,parcel_select_1sample)),
 
-  tar_target(deltas_ttest_att, join_summaries(parcels_deltas,attributes_pfix, parcel_year_meta_combined_results, cYear)),
+  tar_target(deltas_ttest_att, join_summaries(parcels_deltas,attributes_pfix, parcel_year_meta_combined_results, parcel_test_sums, cYear)),
 
   tar_target(parcel_datatable, parcel_data_table(deltas_ttest_att,cYear)),
+  tar_target(parcel_datatable_chronic, parcel_data_table_chronic(deltas_ttest_att,cYear)),
   # Join GIS parcels to sig tests
   tar_target(parcels_shp_ttest, left_join(parcels_shp, deltas_ttest_att, by = c("PCL"="Parcel"))),
   # create map of sig tests
