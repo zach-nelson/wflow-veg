@@ -6,6 +6,8 @@ library(here)
 library(sf)
 library(tmaptools)
 library(tmap)
+library(ggpmisc)
+library(ggpubr)
 
 source("code/R/functions.R")
 tar_option_set(
@@ -87,6 +89,9 @@ tar_target(n_transects_sampled, count_transects_cyear(lpt_updated_master,cYear))
   tar_target(transects, summarise_to_transect(x=lpt_long_no_lela_pfix, y=wvcom_pfix)),
   tar_target(parcels, summarise_to_parcel(x= transects)),
   tar_target(parcels_deltas, add_parcel_deltas(parcels)),
+# tar_target(long_parcel_cov_type, pivot_long_wc(parcels_deltas)),
+
+
 
   tar_target(rs_file, "data/rs.csv", format = "file"),
   tar_target(rs, read.csv(rs_file)),
@@ -100,6 +105,8 @@ tar_target(n_transects_sampled, count_transects_cyear(lpt_updated_master,cYear))
   tar_target(wellcont_means, wellfield_control_means(parcels_deltas, attributes_pfix)),
   tar_target(wellcont_means_rarefied, wellfield_control_means_rarefied(parcels_deltas, attributes_pfix)),
   tar_target(plot_wellcontrol, plot_wellfield_control(wellcont_means_rarefied)),
+  tar_target(trends.w.c, compute_trend_well_cont(wellcont_means_rarefied)),
+  tar_target(boxplot.w.c, boxplot_well_cont(parcels,attributes_pfix,cYear)),
 
   tar_target(dtw_file, "data/dtw.csv", format = "file"),
   tar_target(dtw, read.csv(dtw_file)),

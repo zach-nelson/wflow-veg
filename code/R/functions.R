@@ -257,6 +257,86 @@ wellfield_control_means <- function(parcels_deltas, attributes){
       )
 }
 
+
+# pivot_long_wc <- function(parcels_deltas){
+#   parcels_deltas %>%
+#     select(Parcel,NominalYear,Cover,Shrub,Grass,Herb,TLC) %>%
+#     gather(Cover.Type,Cover,Shrub:TLC)
+#
+# }
+
+compute_trend_well_cont <- function(wellcont_wide){
+  lmmod <- y ~ x
+
+  wellcont_wide$Type[wellcont_wide$Type=="C"]<-"Control"
+  wellcont_wide$Type[wellcont_wide$Type=="W"]<-"Wellfield"
+
+  plot <- wellcont_wide %>%
+    pivot_longer(Cover:Shrub, names_to = "Cover.Type", values_to = "Cover") %>%
+    filter(!Cover.Type %in% c("Herb")) %>%
+    ggplot(aes(x = NominalYear, y = Cover, color = Type))+
+    geom_point()+
+    geom_line()+
+    geom_smooth(method='lm',se=FALSE,formula = lmmod)+
+    xlab("Year") +
+    ylab("Cover (0-100)") +
+    # stat_poly_eq(aes(label = paste(..rr.label.., sep = "~~~~")), formula = lmmod, parse = TRUE,label.y.npc = 0.1) +
+    stat_fit_glance(method = "lm",
+                    method.args = list(formula = lmmod),
+                    # label.x.npc = .1,
+                    # label.y.npc = 1,
+                    label.x=1989,
+                    label.y=40,
+                    geom = "text",
+                    aes(label = paste("P = ", signif(..p.value.., digits = 2), sep = "")))+
+    facet_grid(Cover.Type~Type)+
+    theme(legend.position="none")
+
+  return(plot)
+}
+
+boxplot_well_cont <- function(parcels, attributes_pfix,cYear){
+  # my_comparisons <- list(c(1986, cYear))
+
+  # join attributes
+  a <- attributes_pfix %>% select(Parcel,Type)
+  parcels <- parcels %>% left_join(a, by = "Parcel")
+
+  # get the parcels with both baseline and current year data
+  # spreading separate years into columns provides NA in parcel rows without data
+  # in that year.
+  parcels.spread <- parcels %>%
+    select(Parcel,NominalYear,Cover) %>%
+    filter(NominalYear %in% c("1986",cYear)) %>%
+    spread(NominalYear,Cover)
+
+  Pairwise <- parcels.spread %>%
+    filter(!is.na(`2020` &  `1986`)) %>%
+    select(Parcel)
+
+
+  # bl.set <- Parcels %>%
+  #   filter(Parcel %in% Pairwise$Parcel, NominalYear %in% c("1986","2019")) %>%
+  #   select(Parcel,NominalYear,Year,Type,Cover,Shrub,Grass,TLC) %>%
+  #   gather(Cover.Type,Cover,Cover:TLC) %>%
+  #   filter(Cover.Type != 'TLC')
+  # # bl.set  %>% write.csv('bl.set.csv')
+  #
+  # bl.set$Cover[is.na(bl.set$Cover)] <- 0
+
+ plot <-  parcels %>% filter(Parcel %in% Pairwise$Parcel, NominalYear %in% c("1986",cYear)) %>%
+    select(Parcel,NominalYear,Year,Type,Cover,Shrub,Grass,TLC) %>%
+    gather(Cover.Type,Cover,Cover:TLC)%>%
+    filter(Cover.Type != 'TLC') %>%
+    ggplot(aes(x = Type, y = Cover, color = as.factor(NominalYear)))+
+    geom_boxplot()+
+    facet_wrap(~Cover.Type) +
+    stat_compare_means(aes(group = NominalYear), method='t.test',  paired = FALSE, label = "p.signif",label.y = c(80))
+
+ return(plot)
+ }
+
+
 wellfield_control_means_rarefied <- function(parcels_deltas, attributes){
 
   Parcels <- attributes %>% select(Parcel, Type) %>% left_join(parcels_deltas, by = "Parcel")

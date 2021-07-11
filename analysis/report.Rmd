@@ -142,18 +142,22 @@ tar_load(n_parcels_all_years)
 # tar_load(parcel_test_sums)
 tar_load(parcel_test_sums)
 
+
 tar_load(icwd_ladwp_bind)
 tar_load(lpt_updated_master)
 tar_load(transects)
+tar_load(parcels)
 tar_load(parcels_shp)
 tar_load(parcels_deltas)#parcel-year-deltas
-tar_load(parcel_year_meta_2samp_results)
-tar_load(parcel_year_meta_1samp_results)
+# tar_load(parcel_year_meta_2samp_results)
+# tar_load(parcel_year_meta_1samp_results)
 tar_load(parcel_year_meta_combined_results)
 tar_load(deltas_ttest_att)
-
+tar_load(wellcont_means)
 tar_load(wellcont_means_rarefied)
 tar_load(plot_wellcontrol)
+tar_load(boxplot.w.c)
+tar_load(trends.w.c)
 
 tar_load(plot_1sample_timeseries)
 tar_load(plot_2sample_timeseries)
@@ -171,6 +175,7 @@ tar_load(panel_map_bg)
 # tar_load(panel_map_lp)
 # tar_load(monsites_shp)
 ```
+
 
 # Results {.tabset}
 
@@ -247,6 +252,13 @@ Here the subset of wellfield and control parcels that have been sampled in every
 plot_wellcontrol
 ```
 
+```{r plot-wellcontrol-trends}
+trends.w.c
+```
+
+```{r plot-wellcontrol-boxplot1}
+boxplot.w.c
+```
 
  
 ## Parcel Cover
@@ -316,7 +328,7 @@ Distillation of the effect size of parcel vegetation change (Cover.Delta, Grass.
 These wellfield parcels were below baseline perennial cover in `r cYear`. Cover.Delta is the change from baseline. `sig.counter` is the number of years the parcel has been below baseline in a row, `sum.sig` is the number of total years it was significantly below baseline out of `n` years sampled, and `max.run` is the longest consecutive period the parcel was below baseline.
 
 
-```{r}
+```{r datatable-chronic}
 parcel_datatable_chronic
 ```
 
@@ -375,7 +387,11 @@ plot_1sample_timeseries
 
 Section I.C of the Green Book describes the measurable, attributable, and significance three-step evaluation the Technical Group will follow on a case by case basis to determine whether *decreases and/or changes in the vegetation or other significant effects on the environment have occurred or are occurring in a given management area and to ascertain whether a change is significant and whether mitigation is necessary.* The Green Book prescribes, *To determine if a significant effect has occurred or is occurring, the Technical Group first shall evaluate the measurability of the effect* (Green Book Section I.C.1.a); *if the effect is measurable, the cause shall be evaluated* (Green Book Section I.C.1.b); *if the cause of the effect is attributable to LADWP water management, the significance of the effect will then be assessed* (Green Book Section I.C.1.d). 
 
-The list of parcels exhibiting measurable changes identified in this report meet the criteria for the Technical Group to evaluate the cause(s) of the apparent changes from baseline vegetation goals.
+The list of parcels exhibiting measurable and persistent changes identified in this report meet the criteria for the Technical Group to evaluate the cause(s) of the apparent changes from baseline vegetation goals.
+
+```{r plot-wellcontrol-boxplot2}
+boxplot.w.c
+```
 
 Section I.C.1.b. of the Green Book, 'Determining Attributability', describes,
 
