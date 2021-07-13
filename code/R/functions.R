@@ -1,4 +1,4 @@
-
+# line point wrangling ----
 #' Title
 #'
 #' @param icwd_wide
@@ -58,29 +58,12 @@ save_csv_and_return_path <- function(processed, cYear, entity) {
   return(paste0("output/",entity, "_lpt_",cYear,".csv"))
 }
 
-count_parcels_all_years <- function(lpt_updated_master){
-  lpt_updated_master %>%
-    group_by(Year) %>%
-    summarise(n = n_distinct(Parcel))
+# this will update the data folder for next year's updates with a new
+# uptodate master file.
+save_master_csv_and_return_path <- function(processed, cYear, entity) {
+  processed %>% write_csv(paste0("data/lpt_MASTER_",cYear,".csv"))
+  return(paste0("data/lpt_MASTER_",cYear,".csv"))
 }
-
-count_parcels_cyear <- function(n_parcels_all_years,cYear){
-  n_parcels_sampled_cYear <- n_parcels_all_years %>%
-    filter(Year == cYear)
-  n_parcels_sampled <- n_parcels_sampled_cYear$n
-
-  return(n_parcels_sampled)
-}
-
-count_transects_cyear <- function(lpt_updated_master,cYear){
-  cyr_transects <- lpt_updated_master %>% filter(Year == cYear)%>%
-    summarise(n = n_distinct(plotid))
-
-  n_transects <- cyr_transects$n
-  return(n_transects)
-}
-
-
 
 # filter out invasive species LELA2 for transect summaries.
 #' Title
@@ -234,6 +217,30 @@ add_parcel_deltas <- function(parcels){
   return(p)
 }
 
+# summary line point effort ----
+count_parcels_all_years <- function(lpt_updated_master){
+  lpt_updated_master %>%
+    group_by(Year) %>%
+    summarise(n = n_distinct(Parcel))
+}
+
+count_parcels_cyear <- function(n_parcels_all_years,cYear){
+  n_parcels_sampled_cYear <- n_parcels_all_years %>%
+    filter(Year == cYear)
+  n_parcels_sampled <- n_parcels_sampled_cYear$n
+
+  return(n_parcels_sampled)
+}
+
+count_transects_cyear <- function(lpt_updated_master,cYear){
+  cyr_transects <- lpt_updated_master %>% filter(Year == cYear)%>%
+    summarise(n = n_distinct(plotid))
+
+  n_transects <- cyr_transects$n
+  return(n_transects)
+}
+
+# wellfield control----
 #' Title
 #'
 #' @param parcels_deltas
@@ -305,14 +312,29 @@ boxplot_well_cont <- function(parcels, attributes_pfix,cYear){
   # get the parcels with both baseline and current year data
   # spreading separate years into columns provides NA in parcel rows without data
   # in that year.
-  parcels.spread <- parcels %>%
+  parcels.select.compare <- parcels %>%
     select(Parcel,NominalYear,Cover) %>%
-    filter(NominalYear %in% c("1986",cYear)) %>%
-    spread(NominalYear,Cover)
-
+    filter(NominalYear %in% c("1986",cYear))
+  parcels.spread <- parcels.select.compare %>%
+    pivot_wider(names_from = NominalYear,
+                values_from=Cover,
+                names_prefix = "y")
+  # parcels.spread <- parcels %>%
+  #   select(Parcel,NominalYear,Cover) %>%
+  #   filter(NominalYear %in% c("1986",cYear)) %>%
+  #   pivot_wider(NominalYear,Cover, names_prefix = "y")
+  cYear_col <- paste0("y",cYear)
+  # Pairwise <- parcels.spread %>%
+    # filter(!is.na(paste0("y",cYear) &  y1986)) %>%
+    # select(Parcel)
   Pairwise <- parcels.spread %>%
-    filter(!is.na(`2020` &  `1986`)) %>%
+    # filter(!is.na(paste0("y",cYear) &  y1986)) %>%
+    filter(!is.na(cYear_col) &  !is.na(y1986))
+
+  pairwise_cyear <- Pairwise %>%
     select(Parcel)
+
+
 
 
   # bl.set <- Parcels %>%
@@ -324,89 +346,93 @@ boxplot_well_cont <- function(parcels, attributes_pfix,cYear){
   #
   # bl.set$Cover[is.na(bl.set$Cover)] <- 0
 
- plot <-  parcels %>% filter(Parcel %in% Pairwise$Parcel, NominalYear %in% c("1986",cYear)) %>%
-    select(Parcel,NominalYear,Year,Type,Cover,Shrub,Grass,TLC) %>%
-    gather(Cover.Type,Cover,Cover:TLC)%>%
-    filter(Cover.Type != 'TLC') %>%
-    ggplot(aes(x = Type, y = Cover, color = as.factor(NominalYear)))+
-    geom_boxplot()+
-    facet_wrap(~Cover.Type) +
-    stat_compare_means(aes(group = NominalYear), method='t.test',  paired = FALSE, label = "p.signif",label.y = c(80))
-
+ plot <-  parcels %>% filter(Parcel %in% Pairwise$Parcel,
+                             NominalYear %in% c("1986",cYear)) %>%
+   select(Parcel,NominalYear,Year,Type,Cover,Shrub,Grass,TLC) %>%
+   gather(Cover.Type,Cover,Cover:TLC)%>%
+   filter(Cover.Type != 'TLC', !is.na(Type)) %>%
+   ggplot(aes(x = Type, y = Cover, color = as.factor(NominalYear)))+
+   geom_boxplot()+
+   facet_wrap(~Cover.Type) +
+   stat_compare_means(aes(group = NominalYear), method='t.test',  paired = FALSE, label = "p.signif",label.y = c(80))
  return(plot)
  }
 
 
-wellfield_control_means_rarefied <- function(parcels_deltas, attributes){
+wellfield_control_means_rarefied <- function(parcels_deltas, attributes) {
+  Parcels <- attributes %>%
+    select(Parcel, Type) %>%
+    left_join(parcels_deltas, by = "Parcel")
 
-  Parcels <- attributes %>% select(Parcel, Type) %>% left_join(parcels_deltas, by = "Parcel")
-
-  Parcels %>% filter(Parcel %in% c(
-    'BGP031',
-    'BLK115',
-    'FSL187',
-    'IND096',
-    'IND163',
-    'LNP018',
-    'MAN060',
-    'PLC024',
-    'PLC106',
-    'PLC121',
-    'PLC223',
-    'UNW029',
-    'UNW039',
-    'BGP154',
-    'BGP162',
-    'BLK009',
-    'BLK016',
-    'BLK024',
-    'BLK033',
-    'BLK039',
-    'BLK044',
-    'BLK069',
-    'BLK074',
-    'BLK075',
-    'BLK094',
-    'BLK099',
-    'IND011',
-    'IND035',
-    'IND106',
-    'IND111',
-    'IND132',
-    'IND139',
-    'IND231',
-    'LAW063',
-    'LAW065',
-    'LAW085',
-    'LAW107',
-    'LAW120',
-    'LAW122',
-    'MAN006',
-    'MAN007',
-    'MAN037',
-    'TIN028',
-    'TIN068')) %>% group_by(Type, NominalYear) %>%
+  Parcels %>%
+    filter(Parcel %in% c(
+      "BGP031",
+      "BLK115",
+      "FSL187",
+      "IND096",
+      "IND163",
+      "LNP018",
+      "MAN060",
+      "PLC024",
+      "PLC106",
+      "PLC121",
+      "PLC223",
+      "UNW029",
+      "UNW039",
+      "BGP154",
+      "BGP162",
+      "BLK009",
+      "BLK016",
+      "BLK024",
+      "BLK033",
+      "BLK039",
+      "BLK044",
+      "BLK069",
+      "BLK074",
+      "BLK075",
+      "BLK094",
+      "BLK099",
+      "IND011",
+      "IND035",
+      "IND106",
+      "IND111",
+      "IND132",
+      "IND139",
+      "IND231",
+      "LAW063",
+      "LAW065",
+      "LAW085",
+      "LAW107",
+      "LAW120",
+      "LAW122",
+      "MAN006",
+      "MAN007",
+      "MAN037",
+      "TIN028",
+      "TIN068"
+    )) %>%
+    group_by(Type, NominalYear) %>%
     dplyr::summarize(
-      count=n(),
-      Cover=mean(Cover),
-      Grass=mean(Grass),
-      Herb=mean(Herb),
-      Shrub=mean(Shrub)
+      count = n(),
+      Cover = mean(Cover),
+      Grass = mean(Grass),
+      Herb = mean(Herb),
+      Shrub = mean(Shrub)
     )
 }
 
 
-plot_wellfield_control <- function(wellcont_means_rarefied){
+plot_wellfield_control <- function(wellcont_means_rarefied) {
   plot <-
     wellcont_means_rarefied %>%
     select(-Herb) %>%
     pivot_longer(Cover:Shrub, names_to = "type", values_to = "cover") %>%
-    ggplot(aes(x = NominalYear, y = cover, color = Type))+
-    geom_point()+
-    geom_line()+
+    ggplot(aes(x = NominalYear, y = cover, color = Type)) +
+    geom_point() +
+    geom_line() +
     facet_wrap(~type, ncol = 2)
 
- # ggsave("wellfield_control_rarefied.png", plot, width = 7, height = 7)
+  # ggsave("wellfield_control_rarefied.png", plot, width = 7, height = 7)
   # return("wellfield_control_rarefied.png")
   return(plot)
 }
@@ -421,11 +447,14 @@ plot_wellfield_control <- function(wellcont_means_rarefied){
 #' @examples
 #' # this functino per parcel -  needs to be embedded into loop
 
+# time series plot functions----
 plot.dtw <- function(PID) {
 
   # Extract the parcel of interest.
 
-  pcldtw <- dtw %>% filter(Parcel == PID) %>% arrange(Year)
+  pcldtw <- dtw %>%
+    filter(Parcel == PID) %>%
+    arrange(Year)
   pcldtw <- pcldtw %>% mutate(phreatic.zone = MIN - 3)
   n <- dim(pcldtw)[1]
 
@@ -433,33 +462,33 @@ plot.dtw <- function(PID) {
   # be plotted.  Allow for missing data.  Set up the plot limits.
   # specifying the max first, then min in ylim sets up the reverse scale we want for DTW plotting where 0 is at top or soil surface representation.
 
-  if(is.na(pcldtw$DTW))
-  {ylim<-c(9,0)
-  }else{
-    this.max.DTW <- max(pcldtw$DTW, na.rm=TRUE) + 1
+  if (is.na(pcldtw$DTW)) {
+    ylim <- c(9, 0)
+  } else {
+    this.max.DTW <- max(pcldtw$DTW, na.rm = TRUE) + 1
     # this.min.DTW <- 0)
-    ylim <- c(this.max.DTW,0)
+    ylim <- c(this.max.DTW, 0)
   }
 
 
-  plot(xlim, ylim, xlab='', ylab='DTW [ft]', xlim=xlim, ylim=ylim, yaxs='i', type='n', axes=F)  # Draw solid lines at important depth points.
+  plot(xlim, ylim, xlab = "", ylab = "DTW [ft]", xlim = xlim, ylim = ylim, yaxs = "i", type = "n", axes = F) # Draw solid lines at important depth points.
 
   # could control ylim in global chunk but if so, need to change above plot function and below axis setup
   # add the axes and a frame.
-  axis(side=1, at=seq(xlim[1], xlim[2]), labels=FALSE, tcl=-0.2)
-  axis(side=1, at=pretty(xlim))
-  axis(side=2, at=pretty(ylim), las=2)
-  abline(h=pretty(ylim), col="lightgray")
+  axis(side = 1, at = seq(xlim[1], xlim[2]), labels = FALSE, tcl = -0.2)
+  axis(side = 1, at = pretty(xlim))
+  axis(side = 2, at = pretty(ylim), las = 2)
+  abline(h = pretty(ylim), col = "lightgray")
   box()
 
-  abline(h=6, lwd=1, col="green")
-  #text(rmarg, 2, 'Grass root zone', adj=0, xpd=NA)
+  abline(h = 6, lwd = 1, col = "green")
+  # text(rmarg, 2, 'Grass root zone', adj=0, xpd=NA)
 
-  abline(h=12, lwd=1, col="brown")
-  #text(rmarg, 4, 'Shrub root zone', adj=0, xpd=NA)
+  abline(h = 12, lwd = 1, col = "brown")
+  # text(rmarg, 4, 'Shrub root zone', adj=0, xpd=NA)
 
-  #abline(h=Parcel$DTW[1], lwd=1, col='blue')
-  #text(rmarg, Parcel$DTW[1], '1985 DTW', adj=0, xpd=NA)
+  # abline(h=Parcel$DTW[1], lwd=1, col='blue')
+  # text(rmarg, Parcel$DTW[1], '1985 DTW', adj=0, xpd=NA)
 
 
   # Assess reliability and present data only in cases where
@@ -467,8 +496,8 @@ plot.dtw <- function(PID) {
   # if (as.character(Attribute$DTW.Reliability) %in% c('Reliable', 'Relative Recovery Reliable' , 'Baseline Not Reliable', 'Current DTW Not Reliable','Current DTW Reliable','Need hydrograph Evaluation','NoData','Not Reliable','Baseline Reliable','Validation Needed)) {
 
   # Draw in a lines and points graph.
-  lines(pcldtw$Year, pcldtw$DTW, type='b', pch=16, col="purple")
-  #lines(Parcel$Year, Parcel$DTWcap1, type='l', pch=16, col="lightblue")
+  lines(pcldtw$Year, pcldtw$DTW, type = "b", pch = 16, col = "purple")
+  # lines(Parcel$Year, Parcel$DTWcap1, type='l', pch=16, col="lightblue")
   # lines(pcldtw$Year, pcldtw$MIN, type='b', pch=16, col="darkblue")
   # lines(pcldtw$Year, pcldtw$MAX, type='b', pch=16, col="grey")
   # lines(pcldtw$Year, pcldtw$phreatic.zone, type='b', pch=16, col="blue")
@@ -952,7 +981,7 @@ plot.perennial.grass <- function(PID, transects) {
 }
 
 
-
+# assimilate 5 timeseries----
 
 # # five_row_timeseries <- function(attributes_pfix, transects, dtw_pfix, rs_pfix, cYear){
 #
@@ -1031,7 +1060,7 @@ plot.perennial.grass <- function(PID, transects) {
 # dev.off()
 # }
 
-
+# ttests----
 #' Title
 #'
 #' @param transects
@@ -1178,6 +1207,7 @@ plot_2samptest_timeseries <- function(data,cYear,parcel.select){
 
 }
 
+# summary table----
 #' join_summaries
 #'
 #' @param parcels_deltas
@@ -1237,6 +1267,38 @@ parcel_data_table <- function(deltas_ttest_att,cYear){
   return(table)
 }
 
+#' Title
+#'
+#' @param data2samp
+#' @param data1samp
+#'
+#' @return
+#' @export
+#'
+#' @examples
+bindttest_count_sig_runs <- function(data2samp, data1samp){
+  bound <- bind_rows(data2samp,data1samp)
+
+  count.runs <- bound  %>%
+    mutate(indicator = case_when(
+      significance == 'significant'~1,
+      significance == 'ns'~0)) %>%
+    group_by(Parcel, grp = with(rle(indicator), rep(seq_along(lengths), lengths))) %>%
+    mutate(counter = seq_along(grp)) %>%
+    ungroup() %>%
+    select(-grp) %>% mutate(sig.counter = indicator*counter)
+
+
+}
+
+parcel_testadd_sums <- function(data){
+  data %>%
+    group_by(Parcel) %>%
+    summarise(n = n(),
+              sum.sig = sum(indicator),
+              max.run = max(sig.counter))
+}
+
 # filter the main table further for a persistently significant deviation.
 # I should probably just create another target for a highlighted list for
 # executive summary and wrap the datatable options into a table function.
@@ -1268,6 +1330,24 @@ parcel_data_table_chronic <- function(deltas_ttest_att,cYear){
 }
 
 
+
+# Maps----
+#' Title
+#'
+#' @param cYear
+#' @param parcels_shp_ttest
+#' @param wf
+#' @param or
+#' @param streams
+#' @param canals
+#' @param laa
+#' @param lakes
+#' @param monit.sites
+#'
+#' @return
+#' @export
+#'
+#' @examples
 panel_map<- function(cYear,parcels_shp_ttest, wf, or,streams,canals,laa,lakes, monit.sites){
 
   # write function to handle custom plot with input as string e.g. 'Laws'
@@ -1277,49 +1357,32 @@ panel_map<- function(cYear,parcels_shp_ttest, wf, or,streams,canals,laa,lakes, m
   # the perennial grass currently doesn't have the sig tests,
   # so we specify this manually on the attribute table for now.
   pgr.below <- limit %>% filter(pgr20 == 1)
+  # this should be set as github project task so we don't forget for 2021 data.
 
   tmap_mode("plot")
-  # tm_basemap(leaflet::providers$Esri.WorldStreetMap, group = "Esri World StreetMap") +
-  # tm_basemap(leaflet::providers$Esri.WorldImagery, group = "Esri World Imagery") +
 
-
-  # , breaks = c(-Inf,-.4,-.3,-.2,-.1,-.05,.05,.1,.2,.3,.4,Inf),
-  #-----------------------------------------
   tmgrass <-
-
     tm_shape(limit, group = 'Wellfield - Parcels') +
     tm_polygons(col =c("Grass"), breaks = c(0,5,10,15,20,25,30,35,40,50,60,Inf), palette = "Greens",title.col = "PCL_merged",  id = "PCL_merged",popup.vars = c("GB_TYPE","Ecologic_3","COMM_NAME","Grass.Delta","Cover.Delta", "NDVI.delta","NDVI.Baseline","Type"), group = "Wellfield - Parcels")+
-
     tm_shape(pgr.below, group = 'Wellfield - Parcels') +
     tm_borders(col = 'red',lwd = 2)+
     tm_text("PCL", size = .5,  col = "white",shadow=TRUE,remove.overlap=FALSE, group = 'Labels', auto.placement = .2, bg.color = 'darkgreen')
-  #
 
-  # tm_layout(legend.outside = TRUE, legend.outside.position = 'top', compass.type = 'arrow')
-
-
-  # auto.placement
-  #-----------------------------------------
   tmgrassd <- tm_shape(limit, group = 'Wellfield - Parcels') +
-    # tm_text("PCL_merged",  col = "gray30", root = 3,remove.overlap=TRUE,group = 'Labels') +
+
     tm_polygons(col =c("Grass.Delta"), breaks = c(-40,-30,-20,-10,-5,5,10,20,30,40,Inf),palette = "RdYlGn",title.col = "PCL_merged",  id = "PCL_merged",popup.vars = c("GB_TYPE","Ecologic_3","COMM_NAME","Grass.Delta","Cover.Delta", "NDVI.delta","NDVI.Baseline","Type"), group = "Wellfield - Parcels")+
 
     tm_shape(pgr.below, group = 'Wellfield - Parcels') +
     tm_borders(col = 'red',lwd = 1)+
-    #
-    # tm_shape(prodwell, group = 'Production Wells') +
-    # tm_text("STAID",  col = "white", size=.4,remove.overlap=TRUE,shadow=TRUE,group = 'Labels',auto.placement = .1,bg.color = 'red') +
-    # tm_symbols(col = "purple", scale = .05,title.col = "STAID",  id = "STAID",popup.vars = c("PURPOSE","CONTROL","WF"),group = 'Production Wells')+
-    #
 
 
     tm_shape(canals, group = 'Canals') +
-    # tm_text("NAME",  col = "blue",size= .5, remove.overlap=TRUE)+
+
     tm_lines(col = "blue", scale = .6, group = 'Canals')+
 
 
     tm_shape(streams, group = 'Streams') +
-    # tm_text("NAME",  col = "blue", size= .5,remove.overlap=TRUE,along.lines = TRUE,overwrite.lines = TRUE) +
+
     tm_lines(col = "blue", scale = 1, group = 'Streams')+
 
     tm_shape(monit.sites, group = 'On/Off Monitoring Sites') +
@@ -1327,49 +1390,37 @@ panel_map<- function(cYear,parcels_shp_ttest, wf, or,streams,canals,laa,lakes, m
     tm_symbols(col = "blue", scale = .05, title.col = "SITE",  id = "SITE",popup.vars = c("SITE","TYPE"),group = 'On/Off Monitoring Sites')+
 
     tm_shape(or, group = 'River') +
-    # tm_text("NAME",  col = "blue", size = .7,remove.overlap=TRUE,group = 'River',along.lines=TRUE,overwrite.lines = TRUE) +
+
     tm_lines(col = "blue", scale = 1, group = 'River')+
 
     tm_shape(laa, group = 'LAA') +
-    # tm_text("NAME",  col = "blue", size = .7,remove.overlap=TRUE,group = 'LAA') +
+
     tm_lines(col = "blue", scale = 1, group = 'LAA')+
 
     tm_shape(lakes, group = 'Lakes') +
     tm_polygons(col = "blue", scale = 1, group = 'Lakes')
-  # +
-  # tm_text("NAME",  col = "black", size = .7,remove.overlap=TRUE,group = 'Lakes')
 
-  #-----------------------------------------
-  #-----------------------------------------
-  #-----------------------------------------
   tmcov <- tm_shape(limit, group = 'Wellfield - Parcels') +
-    # tm_text("PCL_merged",  col = "gray30", root = 3,remove.overlap=TRUE,group = 'Labels',shadow = TRUE) +
+
     tm_polygons(col =c("Cover"), breaks = c(0,5,10,15,20,25,30,35,40,50,60,Inf),palette = "Greens",title.col = "PCL_merged",  id = "PCL_merged",popup.vars = c("GB_TYPE","Ecologic_3","COMM_NAME","Grass.Delta","Cover.Delta", "NDVI.delta","NDVI.Baseline","Type"), group = "Wellfield - Parcels")+
-    # tm_text("PCL",  size = .5,col = "black",remove.overlap=FALSE,group = 'Labels',shadow = TRUE) +
-    #   tm_shape(tpc.below, group = 'Wellfield - Parcels') +
-    # tm_borders(col = 'red')
 
     tm_shape(tpc.below, group = 'Wellfield - Parcels') +
     tm_borders(col = 'red',lwd = 2)+
     tm_text("PCL",  size = .5,col = "white",shadow=TRUE,remove.overlap=FALSE, group = 'Labels', auto.placement = .2, bg.color = 'darkgreen')
-  #-----------------------------------------
+
   tmcovd <- tm_shape(limit, group = 'Wellfield - Parcels') +
-    # tm_text("PCL_merged",  col = "gray30", root = 3,remove.overlap=TRUE,group = 'Labels',shadow = TRUE) +
+
     tm_polygons(col =c("Cover.Delta"), breaks = c(-40,-30,-20,-10,-5,5,10,20,30,40,Inf),palette = "RdYlGn",title.col = "PCL_merged",  id = "PCL_merged",popup.vars = c("GB_TYPE","Ecologic_3","COMM_NAME","Grass.Delta","Cover.Delta", "NDVI.delta","NDVI.Baseline","Type"), group = "Wellfield - Parcels")+
 
     tm_shape(tpc.below, group = 'Wellfield - Parcels') +
     tm_borders(col = 'red')+
 
-    # tm_shape(prodwell, group = 'Production Wells') +
-    # tm_text("STAID",  col = "black", size=.7,remove.overlap=TRUE,group = 'Labels',shadow=TRUE) +
-    # tm_symbols(col = "purple", scale = .1,title.col = "STAID",  id = "STAID",popup.vars = c("PURPOSE","CONTROL","WF"),group = 'Production Wells')+
-
     tm_shape(canals, group = 'Canals') +
-    # tm_text("NAME",  col = "blue", root = 3,remove.overlap=TRUE) +
+
     tm_lines(col = "blue", scale = .6, group = 'Canals')+
 
     tm_shape(streams, group = 'Streams') +
-    # tm_text("NAME",  col = "blue", size= .5,remove.overlap=TRUE,along.lines = TRUE) +
+
     tm_lines(col = "blue", scale = .7, group = 'Streams')+
 
     tm_shape(monit.sites, group = 'On/Off Monitoring Sites') +
@@ -1378,52 +1429,22 @@ panel_map<- function(cYear,parcels_shp_ttest, wf, or,streams,canals,laa,lakes, m
 
 
     tm_shape(or, group = 'River') +
-    # tm_text("SITE",  col = "black", size = .7,remove.overlap=TRUE,group = 'River',along.lines=TRUE) +
+
     tm_lines(col = "blue", scale = 1, group = 'River')+
 
     tm_shape(laa, group = 'LAA') +
-    # tm_text("SITE",  col = "black", size = .7,remove.overlap=TRUE,group = 'River',shadow = TRUE) +
+
     tm_lines(col = "blue", scale = 1, group = 'LAA')+
 
     tm_shape(lakes, group = 'Lakes') +
     tm_polygons(col = "blue", scale = 1, group = 'Lakes')
-  #   tm_text("NAME",  col = "black", size = .7,remove.overlap=TRUE,group = 'Lakes')
-  #
+
 map <-tmap_arrange(tmgrass, tmgrassd,tmcov,tmcovd,ncol=2)
 
-tmap_save(map,paste0('docs/assets/',cYear,'_',wf,'map.png'))
-# save images in docs/assets so that workflowr website will be
-# able to access the images. This might all be do to the tmap_arrange
-# not producing an object compatible with target that can be called with
-#tar_read()
-  return(paste0('assets/',cYear,'_',wf,'map.png'))
-# return the path to the images with assets as the root for website in docs
-# directory.
-  # tmap_arrange()
-  # tmap_arrange(tmcov,tmcovd,tmgrass,tmgrassd)
-  # tmap_arrange(tmgrass,tmgrassd)
 
-}
-
-bindttest_count_sig_runs <- function(data2samp, data1samp){
-  bound <- bind_rows(data2samp,data1samp)
-
-  count.runs <- bound  %>%
-    mutate(indicator = case_when(
-      significance == 'significant'~1,
-      significance == 'ns'~0)) %>%
-    group_by(Parcel, grp = with(rle(indicator), rep(seq_along(lengths), lengths))) %>%
-    mutate(counter = seq_along(grp)) %>%
-    ungroup() %>%
-    select(-grp) %>% mutate(sig.counter = indicator*counter)
+return(map)
 
 
 }
 
-parcel_testadd_sums <- function(data){
-  data %>%
-  group_by(Parcel) %>%
-  summarise(n = n(),
-            sum.sig = sum(indicator),
-            max.run = max(sig.counter))
-}
+

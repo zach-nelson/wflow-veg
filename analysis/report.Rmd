@@ -16,9 +16,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-
-  
-
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 library(targets)
 library(tidyverse)
@@ -28,7 +25,9 @@ library(htmlwidgets)
 library(sf)
 library(tmap)
 library(tmaptools)
-library(here)
+# library(here)
+library(ggpmisc)
+library(ggpubr)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 options(tidyverse.quiet = TRUE)
 ```
@@ -164,7 +163,7 @@ tar_load(plot_2sample_timeseries)
 tar_load(parcel_datatable)
 tar_load(parcel_datatable_chronic)
 tar_load(attributes_reinv)
-
+tar_load(attributes_pfix)
 tar_load(panel_map_lw)
 tar_load(panel_map_bp)
 tar_load(panel_map_ta)
@@ -335,41 +334,56 @@ parcel_datatable_chronic
 # Maps{.tabset}
 
 ## Laws
-```{r}
-knitr::include_graphics(panel_map_lw, error = FALSE)
-# knitr::include_graphics(here(panel_map_lw))
+```{r lw-map}
+
+panel_map_lw
+# knitr::include_graphics(panel_map_lw, error = FALSE)
+
 
 ```
 
 ## Big Pine
-```{r}
-# library(knitr)
-knitr::include_graphics(panel_map_bp, error = FALSE)
-# knitr::include_graphics(here(panel_map_bp))
+```{r bp-map}
+panel_map_bp
+# knitr::include_graphics(panel_map_bp, error = FALSE)
+
 ```
 
+
+
 ## Taboose-Aberdeen
-```{r}
-knitr::include_graphics(panel_map_ta, error = FALSE)
-# knitr::include_graphics(here(panel_map_ta))
+```{r ta-map}
+panel_map_ta
+# knitr::include_graphics(panel_map_ta, error = FALSE)
+
 ```
 
 ## Thibaut-Sawmill
-```{r}
-knitr::include_graphics(panel_map_ts, error = FALSE)
-# knitr::include_graphics(here(panel_map_ts))
+```{r ts-map}
+panel_map_ts
+# knitr::include_graphics(panel_map_ts, error = FALSE)
+
+```
+
+## Independence-Oak
+```{r io-map}
+panel_map_io
+# knitr::include_graphics(panel_map_io, error = FALSE)
+
 ```
 
 ## Symmes-Shepherd
-```{r}
-knitr::include_graphics(panel_map_ss, error = FALSE)
-# knitr::include_graphics(here(panel_map_ss))
+```{r ss-map}
+panel_map_ss
+# knitr::include_graphics(panel_map_ss, error = FALSE)
+
 ```
 
 ## Bairs-George
-```{r}
-knitr::include_graphics(panel_map_bg, error = FALSE)
-# knitr::include_graphics(here(panel_map_bg))
+```{r bg-map}
+panel_map_bg
+# knitr::include_graphics(panel_map_bg, error = FALSE)
+
 ```
 
 
@@ -390,6 +404,7 @@ Section I.C of the Green Book describes the measurable, attributable, and signif
 The list of parcels exhibiting measurable and persistent changes identified in this report meet the criteria for the Technical Group to evaluate the cause(s) of the apparent changes from baseline vegetation goals.
 
 ```{r datatable-chronic2}
+# need to limit this table to below for > 5 years
 parcel_datatable_chronic
 ```
 
