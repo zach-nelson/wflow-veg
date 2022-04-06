@@ -1,8 +1,8 @@
 ---
-title: "Green Book Section I.C.1.a: Determining Measurability"
-subtitle: "BOX I.C.I.a.ii. Transects for monitoring vegetation response to pumping"
+title: "Owens Valley Vegetation Condition"
+subtitle: "2021 Annual Report"
 author: "Water Department - County of Inyo"
-date: "7/8/2021"
+date: "11/8/2021"
 output: 
  html_document: 
    code_folding: hide
@@ -15,6 +15,8 @@ output:
 editor_options: 
   chunk_output_type: console
 ---
+
+
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 library(targets)
@@ -32,23 +34,73 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 options(tidyverse.quiet = TRUE)
 ```
 
-# Introduction {.tabset}
+
 ```{r tar-load-initial}
 tar_load(n_parcels_sampled)
 tar_load(cYear)
 tar_load(n_transects_sampled)
 ```
 
-## Purpose
-Inyo County Water Department monitors trends in vegetation cover and species composition in groundwater-dependent vegetation parcels following protocols described in the Technical appendix to the Water Agreement (Green Book Box I.C.1.a.ii, [revised 2017](https://www.inyowater.org/wp-content/uploads/2017/09/GBMemo_SCfeb2017.pdf)). The primary purpose of this monitoring is to detect any “Significant decreases and changes in Owens Valley vegetation from conditions documented in 1984 to 1987". Vegetation management goals of the Agreement are based on canopy cover and species composition recorded during LADWP’s 1984-87 baseline vegetation parcel mapping and vegetation sampling effort.  To evaluate the condition of the vegetation, field crews of ICWD and LADWP monitor vegetation at permanent locations within a subset of the groundwater-dependent parcels potentially affected by pumping.
+
+# Background
+The Inyo County Water Department monitors groundwater-dependent ecosystems potentially affected by groundwater pumping. Data collection and statistical protocols are described in the Technical appendix to the Water Agreement (Green Book Box I.C.1.a.ii, [revised 2017](https://www.inyowater.org/wp-content/uploads/2017/09/GBMemo_SCfeb2017.pdf)). The primary purpose of this monitoring is to detect any “Significant decreases and changes in Owens Valley vegetation from conditions documented in 1984 to 1987". Vegetation management goals of the Agreement are based on canopy cover and species composition recorded during LADWP’s 1984-87 baseline vegetation parcel mapping and vegetation sampling effort.  To evaluate the condition of the vegetation, field crews of ICWD and LADWP monitor vegetation at permanent locations within a subset of the groundwater-dependent parcels potentially affected by pumping.
 
 The purpose of this report is to provide the Inyo-LA Technical Group with an annual summary of the groundwater-dependent vegetation parcels on LA-owned land that show measurably different vegetation characteristics from the 1984-87 vegetation baseline. 
 
-Green Book Box I.C.1.a.ii., "Transects for monitoring vegetation response to pumping", was revised by the Technical Group and Standing Committee in 2017 to reflect agreement on jointly managing the vegetation monitoring program and statistical procedures for annually determining whether estimated levels of vegetation change are compatible with Agreement goals.  This report provides this measurability analysis.
+Green Book Box I.C.1.a.ii., "Transects for monitoring vegetation response to pumping", was revised by the Technical Group and Standing Committee in [2017](https://www.inyowater.org/wp-content/uploads/2017/09/GBMemo_SCfeb2017.pdf) to reflect agreement on how to jointly manage the vegetation monitoring program, including management of a shared database and which statistical procedures and parameters would be used to flag a measurable deviation from baseline conditions within vegetation parcel(s). Any parcel or group of parcels exhibiting a persistent deviation from baseline determined by these statistical procedures is then evaluated using the procedures in Green Book Section I.C.1.b. Determining Attributability. 
+
+This research website provides this annual measurability analysis of Green Book Section I.C.1.a. The procedures described in Green Book Box I.C.1.a.ii. are translated here into a data pipeline using the `targets` R package, so that the implementation of the procedures are transparent, reproducible and accessible. The `workflowr` R package is used to create reproducibility checks and a version controlled github repository including this research website. The github repository can be accessed by clicking the `source` icon at the top right of this page.
+
+To reproduce the results, the github repository can be cloned or downloaded, the `_targets.R` script is run in Rstudio which sources the `functions.R` script. Once the targets are created, the `report.rmd` is run to reproduce the `report.html` (this webpage).
 
 
+Links to governing documents (hosted at [inyowater.org](https://www.inyowater.org/))
 
-## Green Book Box I.C.1.a.ii{data-short-title="Green Book Methods"}
+Inyo/LA Long Term Water Agreement([LTWA](https://www.inyowater.org/documents/governing-documents/water-agreement/))
+
+LTWA Technical Appendix ([Green Book](https://www.inyowater.org/documents/governing-documents/green-book/))
+
+Green Book Box I.C.1.a.ii.[TRANSECTS FOR MONITORING VEGETATION RESPONSE TO PUMPING](https://www.inyowater.org/wp-content/uploads/2017/09/GBMemo_SCfeb2017.pdf)
+
+---
+
+Green Book Section I.C, Impact Determination and Mitigation
+
+"Among the primary goals of the Agreement are to manage groundwater pumping and surface water management practices as follows: 1) to avoid causing significant decreases in live vegetation cover; 2) to avoid changing a significant amount of vegetation from one classification to a lower (alphabetically) classification; 3) to avoid causing other significant effects on the environment; and 4) in a manner consistent with State and Federal laws pertaining to rare and endangered species. If any of these goals are not achieved, feasible mitigation of the affected area will be implemented. However, mitigation is not considered a primary management tool, but rather a secondary tool that will be employed should impacts occur that are inconsistent with the goals of the Agreement."
+
+"This section outlines a procedure for determining whether decreases and/or changes in vegetation or other significant effects on the environment have occurred or are occurring in a given management area. It describes the process the Technical Group will follow to ascertain whether a change is significant, and thus, whether it requires mitigation. It also describes how the Technical Group will develop and implement a mitigation plan and monitoring and reporting program."
+
+
+Section I.C.1, Determination of Significant Impacts
+
+"A significant decrease or change or other significant effect on the environment will be mitigated if it is measurable, attributable to groundwater pumping or surface water management practices, and significant. The Agreement provides that the determination of significance of an impact, and thus, whether it must be mitigated, will be made on a case by case basis. The steps in the case by case analysis are described below."
+
+Section I.C.1.a (Determining Measurability)
+
+"In determining whether a change in vegetation cover or composition is measurable, the Technical Group will consider all relevant factors, including:
+
+Comparison of current vegetation cover and composition in the affected area with similar data taken during other time periods, including the 1984-87 vegetation inventory data.
+
+Comparison of vegetation cover and composition at the affected area with vegetation data from one or more control sites located in areas which have similar vegetation, soil, and precipitation conditions.
+
+Comparison of the ratio of recently deceased vegetation to live vegetation in the affected area with other areas not affected by pumping and with similar vegetation cover and composition, soil, and precipitation conditions.
+
+Use of air photo and remote sensing techniques to assist in making comparisons of conditions during different time periods and in mapping the affected area.
+
+Comparison of data from randomly selected transects with similar data taken during other time periods, including the 1984-87 vegetation inventory data. This method will be employed in areas where monitoring site data does not exist, or where data covers an insufficient time period. Such transects will be performed as described in Box I.C.1.a.ii."
+
+The updated Green Book BOX I.C.I.a.ii. outlines a set of procedures to test measurability based on the transect-level monitoring data's statistical deviation from baseline transect-level data.
+
+Section I.C.1 describes
+
+"A determination of measurability will be made if *any* of the relevant factors considered indicate even a *small* documentable change in vegetation cover or composition has occurred."
+
+# Methods
+
+### Baseline
+From September 1984 to Nov 1987, LADWP inventoried and mapped vegetation into 2126 polygons of similar vegetation type, ‘vegetation parcels’ (223,168 acres).  Most of these lands were characterized as nonphreatophytic plant communities (Green Book management type A). The Green Book vegetation monitoring program is focused on groundwater-dependent parcels (Green Book types B, C, D and some E) and primarily those potentially affected by groundwater pumping. 
+
+### Green Book Box I.C.1.a.ii{data-short-title="Green Book Methods"}
 
 [**TRANSECTS FOR MONITORING VEGETATION RESPONSE TO PUMPING**](https://www.inyowater.org/wp-content/uploads/2017/09/GBMemo_SCfeb2017.pdf)
 
@@ -85,22 +137,21 @@ The field technique and sampling design may be modified to permit detailed stati
 Box I.C.1.a.ii shall be modified as necessary in the future to incorporate new or modified field techniques, technology, and/or analytical methods.  Such changes will be jointly developed by the staffs from both Inyo County and Los Angeles and will be presented to the Technical Group for consideration.
 
 
-# Methods{.tabset}
-
-## Baseline
-From September 1984 to Nov 1987, LADWP inventoried and mapped vegetation into 2126 polygons of similar vegetation type, ‘vegetation parcels’ (223,168 acres).  Most of these lands were characterized as nonphreatophytic plant communities (Green Book management type A). The Green Book vegetation monitoring program is focused on groundwater-dependent parcels (Green Book types B, C, D and some E) and primarily those potentially affected by groundwater pumping. 
-
  
-## Parcel Selection
+### Parcel Selection
 Parcels were initially selected based on meeting one or more of the following criteria: (1) the parcel contained a permanent monitoring site where soil/vegetation water balance is calculated; (2) baseline data was collected for the parcel; (3) the parcel was in close proximity to a pumping well; (4) information of past and current land use for the parcel was available.  
 
-## Control Wellfield Designation
+<iframe src="https://inyocounty.maps.arcgis.com/apps/mapviewer/index.html?webmap=078c46d1d1714b58abbc79aa0d2066cc" height="405" width="720" style="border: 1px solid #464646;" allowfullscreen="" allow="autoplay" data-external="1"></iframe>
+
+
+
+### Control Wellfield Designation
 Parcels were classified as either belonging to a wellfield group or control group based on criteria derived from groundwater drawdown during the period of maximum pumping rate that occurred between 1987 and 1993. Parcels were assigned to the wellfield group if (1) kriged DTW estimates exceeded 1-m water-table drawdown during 1987-1993 or (2) they were located at sites corresponding to modeled drawdown contours greater than 10 ft. Parcels were assigned to the control group if (1) kriged DTW estimates were less than 1 m and (2) they were located at sites corresponding to modeled drawdown contours less than 10 ft. If the kriged DTW estimates were not reliable owing an inadequate test-well network near the vegetation parcel, then the groundwater-flow model estimate of the 10-ft drawdown contour was used as the sole criteria to designate parcels as either wellfield or control. An exception to the above criteria was applied to parcels associated with drawdown contours greater than 10-ft yet located near a surface water source (specifically, a canal, sewer pond, creek, river, or a ground water seepage source) that would lessen local drawdown effects—these parcels were classified as control. Some parcels currently in the wellfield group have higher water tables than during the 1987 to 1993 period, but remain in the wellfield group because of their close proximity to pumping wells and potential for pumping-induced drawdown.  Each parcel is also classified by its Green Book management type, Holland plant community type and by its status as either wellfield or control.
 
-## Sample size
+### Sample size
 Most parcels were sampled in 1984-1987 using line-point-intercept sampling. Some parcels were not directly sampled but rather assigned cover and composition values from parcels with similar vegetation conditions. Welch’s t-test for unequal variance was used to evaluate in which parcels and in which year(s) total perennial cover and perennial grass cover has significantly differed from baseline. Since the sample standard deviation is used to construct 95% confidence interval, this method can be used for parcels in which baseline data contained more than one transect or nonzero sample variance. Where unmeasured parcels during baseline subsequently inherited a single baseline value from nearby parcels, a one-sample t-test is used to determine significance from baseline. For parcels with low baseline sample sizes, procedures in Green Book Box I.C.1.a.ii were followed: "For parcels with small baseline inventory sample sizes (e.g. 1-4 transects), a one-sample t-test may be performed using the baseline inventory sample mean as the null hypothesis for the test".
 
-## Data
+### Data
 
 **Field Data (line-point-intercept)**
 
@@ -116,7 +167,7 @@ Normalized difference vegetation index (NDVI) derived from Landsat 5/7/8 was ext
 
 Precipitation dataset was acquired using the gridMET/METDATA dataset produced at the University of Idaho and provided by MapWater consultants. It is a daily dataset of historically observed meteorological variables from Jan 1, 1979 to 2-days lag from the current date. It is produced over the contiguous United States (CONUS). GridMet is produced by bias correcting the daily NLDAS2 dataset to monthly PRISM values producing values on a 4-km (1/24-deg) grid (climateengine.org). 
 
-## `targets`
+### `targets`
 The `Targets` R package is a data pipeline toolkit allowing dependency awareness and automatic rerunning of code that is downstream from dependency changes. A single `_targets.R` script was constructed specifying which datasets are input into which functions, and which outputs are then input into further downstream functions. The functions to process and analyze the data are maintained in a single file from `code/R/functions.R` and the `_targets.R` script sources these functions to make the pipeline.
 
 The targets package `tar_visnetwork()` function output shows the data pipeline in an interactive format. Links are dependencies between functions and targets (input files, intermediate data transformations, model objects, plots and tables etc) specifying which targets are upstream from others and which are out of date. Functions are shown as triangles and targets are shown as circles. Fill color indicates whether or not upstream dependencies are 'Up to date' (green) or 'Outdated' (blue). Only the downstream dependencies of outdated targets or functions will be re-evaluated when the pipeline is rerun using `tar_make()`.
@@ -131,8 +182,10 @@ View [`_targets.R`](https://github.com/zach-nelson/wflow-veg/blob/master/_target
 View [`functions.R`](https://github.com/zach-nelson/wflow-veg/blob/master/code/R/functions.R)
 
 
-## `workflowr`
-Once the targets are defined in the `_targets.R` script, running tar_make() stores the targets in the `_targets` subdirectory to the root of the project, where the .Rproj is located. Now any `.Rmd` anywhere within the project directory can access these targets made from the dependency-aware pipeline. The default `workflowr` project directory encourages `.Rmd` files to be located in the `analysis` directory and these `analysis/file.Rmd` can access the hard-earned data products from the pipeline, and `workflowr::wflow_build()` will render the `.Rmd` to an html website in the `docs` directory that can be version controlled on github and hosted on github-pages. workflowr research websites include seven reproducibility checks including that the output was derived from a 'committed' file to version control, the R environment was empty, seed set, session information recorded, no cache, file paths are relative, and which repository version relates to the website.
+### `workflowr`
+Once the targets are defined in the `_targets.R` script, running tar_make() stores the targets in the `_targets` subdirectory under the root of the project, where the .Rproj is located. Now any `.Rmd` anywhere within the project directory can access these targets that were made from the dependency-aware pipeline. The default `workflowr` project directory defaults `.Rmd` files to be located in the `analysis` directory and these `analysis/file.Rmd` can access the targests. The `workflowr::wflow_build()` will render the `.Rmd` to an html website in the `docs` directory that can be version controlled on github and hosted on github-pages. 
+
+`workflowr` research websites include seven reproducibility checks including that the output was derived from a 'committed' file to version control, the R environment was empty, the seed was set, session information was recorded, no cache, file paths were relative, and which repository version created the website view.
 
 
 
@@ -162,6 +215,7 @@ tar_load(plot_1sample_timeseries)
 tar_load(plot_2sample_timeseries)
 tar_load(parcel_datatable)
 tar_load(parcel_datatable_chronic)
+tar_load(parcel_datatable_significant)
 tar_load(attributes_reinv)
 tar_load(attributes_pfix)
 tar_load(panel_map_lw)
@@ -173,10 +227,14 @@ tar_load(panel_map_ss)
 tar_load(panel_map_bg)
 # tar_load(panel_map_lp)
 # tar_load(monsites_shp)
+
+tar_load(parcel_year_meta_2samp_results_grass)
+tar_load(parcel_year_meta_1samp_results_grass)
+tar_load(parcel_year_meta_2samp_results)
+tar_load(parcel_year_meta_1samp_results)
 ```
 
-
-# Results {.tabset}
+# Results
 
 ```{r parcel-attributes,include=FALSE,eval=FALSE}
 # Parcel Attributes
@@ -262,9 +320,8 @@ boxplot.w.c
  
 ## Parcel Cover
 
-In the `r cYear` growing season, ICWD and LADWP monitored `r n_parcels_sampled` vegetation parcels with approximately `r n_transects_sampled` vegetation transects using the line-point-intercept method described in the Green Book. 
+In the `r cYear` growing season, ICWD and LADWP monitored `r n_parcels_sampled` vegetation parcels with approximately `r n_transects_sampled` vegetation transects using the line-point-intercept method described Green Book Box I.C.1.a.ii. 
 
-parcel-year-cover
 
 ```{r parcel-deltas-table}
 parcels_deltas %>% 
@@ -284,14 +341,15 @@ parcels_deltas %>%
 # deltas
 ```
 
-## Stats
-The baseline perennial vegetation cover statistically compared to `r cYear` vegetation cover using either Welch Two Sample t-test or One Sample t-test depending on baseline sample size following Box I.C.1.a.ii.
+## Grass Cover Change
+
+The baseline perennial vegetation cover and subset of grass cover statistically compared to `r cYear` data using either Welch Two Sample t-test or One Sample t-test - depending on the baseline sample size following Box I.C.1.a.ii.
 
 
 ```{r parcel-yr-ttest-cyear}
 parcel_year_meta_combined_results %>% 
   filter(Year.x == cYear) %>% 
-  select(Parcel,significance,  estimate, estimate1, estimate2, method,n.x, n.y, statistic, p.value) %>%  
+  select(Parcel,cover_type,significance,  estimate, estimate1, estimate2, method,n.x, n.y, statistic, p.value) %>%  
   mutate(across(estimate:estimate2, round, 0)) %>%
   mutate(across(statistic:p.value, round, 3)) %>% 
   datatable(extensions = c('Buttons','FixedColumns'),
@@ -313,25 +371,23 @@ parcel_year_meta_combined_results %>%
 # est, est1, est2, stat, pval, par, clow, chigh, method, alt, sig
 ```
 
-## Summary Table
-Distillation of the effect size of parcel vegetation change (Cover.Delta, Grass.Delta, Shrub.Delta) from baseline to `r cYear`, including the `r cYear` proportion of grass (pGrass), shrub (pShrub), parcel average perennial total cover (Cover), and the functional types Grass and Shrub.
+## Effect size and persistence
 
+above pivot wide the effect size of parcel vegetation change (Cover.Delta, Grass.Delta, Shrub.Delta) from baseline to `r cYear`, including the `r cYear` proportion of grass (pGrass), shrub (pShrub), parcel average perennial total cover (Cover), and subtypes Grass and Shrub cover.
+Cover_sig.counter, Grass_sig.counter, 
 ```{r parcel-delta-sig-table}
 # tar_read(
-  parcel_datatable
+  parcel_datatable_significant
   
 ```
 
 ## Wellfield Parcels Below Baseline
 
-These wellfield parcels were below baseline perennial cover in `r cYear`. Cover.Delta is the change from baseline. `sig.counter` is the number of years the parcel has been below baseline in a row, `sum.sig` is the number of total years it was significantly below baseline out of `n` years sampled, and `max.run` is the longest consecutive period the parcel was below baseline.
-
+These wellfield parcels were below baseline perennial cover in `r cYear`. `Cover.Delta` is the change from baseline. `sig.counter` is the number of years the parcel has been below baseline in a row, `sum.sig` is the number of total years it was significantly below baseline out of `n` years sampled, and `max.run` is the longest consecutive period the parcel was below baseline.
 
 ```{r datatable-chronic}
 parcel_datatable_chronic
 ```
-
-# Maps{.tabset}
 
 ## Laws
 ```{r lw-map}
@@ -348,8 +404,6 @@ panel_map_bp
 # knitr::include_graphics(panel_map_bp, error = FALSE)
 
 ```
-
-
 
 ## Taboose-Aberdeen
 ```{r ta-map}
@@ -399,38 +453,15 @@ plot_1sample_timeseries
 
 # Discussion
 
-Section I.C of the Green Book describes the measurable, attributable, and significance three-step evaluation the Technical Group will follow on a case by case basis to determine whether *decreases and/or changes in the vegetation or other significant effects on the environment have occurred or are occurring in a given management area and to ascertain whether a change is significant and whether mitigation is necessary.* The Green Book prescribes, *To determine if a significant effect has occurred or is occurring, the Technical Group first shall evaluate the measurability of the effect* (Green Book Section I.C.1.a); *if the effect is measurable, the cause shall be evaluated* (Green Book Section I.C.1.b); *if the cause of the effect is attributable to LADWP water management, the significance of the effect will then be assessed* (Green Book Section I.C.1.d). 
+"To determine if a significant effect has occurred or is occurring, the Technical Group first shall evaluate the measurability of the effect" (Green Book Section I.C.1.a). "A determination of measurability will be made if *any* of the relevant factors considered indicate even a *small* documentable change in vegetation cover or composition has occurred."
 
-The list of parcels exhibiting measurable and persistent changes identified in this report meet the criteria for the Technical Group to evaluate the cause(s) of the apparent changes from baseline vegetation goals.
+A determination of measurability has been automated here in code so that the application of the statistical methods in the revised Green Book Box I.C.1.a.ii. are transparent and reproducible.
+
+The list of parcels below show a measurable reduction in either total perennial cover or total perennial grass cover in `r cYear` in addition to the five previous years. These parcels, exhibiting measurable and persistent changes identified in this report meet the criteria for the Technical Group to evaluate the cause(s) of the apparent changes following Green Book Section I.C.1.b.
 
 ```{r datatable-chronic2}
-# need to limit this table to below for > 5 years
+# limited to only sig.counter grass.counter > 5 years
 parcel_datatable_chronic
 ```
 
-Section I.C.1.b. of the Green Book, 'Determining Attributability', describes,
-
->"Once it has been determined that there has been a measurable vegetation decrease or change, it must be determined whether the impact is attributable to groundwater pumping or to changes in surface water management practices.  A determination of whether the impact is attributable to groundwater pumping or changes in surface water management practices will be based on evaluation and consideration of relevant factors, which may include:
-
->i. Recent and historic water table changes and response to pumping as measured at the monitoring site(s) closest to the affected area.
-
->ii. Comparison of soil water, depth to water, and degree of vegetation decrease or change at the affected area and at the control site(s) determined to have similar soil type and vegetation composition and cover.
-
->iii. Comparison of water table depths in the affected area with water table depths in the general region with soils, vegetation cover, and vegetation composition comparable to the affected site. New shallow piezometers may be installed and monitored, if necessary, to obtain relevant water table data.
-
->iv. Rainfall differences that may exist between the control site(s) and the affected area.
-
->v. Evaluation of the extent to which other factors unrelated to the effects of groundwater pumping may have contributed to the vegetation change or decrease. Such factors include drought, wet/dry climatic cycles, flooding, fungal blight, range management practices, wildfire, and off road vehicles.
-
->vi. Change in soil water within the root zone caused by a pumping induced change in the water table.
-
->vii. Review of surface water operations to determine if changes from past practices contributed to vegetation changes.
-
->viii. A decrease in flow from a spring or flowing well.
-
->If a decrease in flow from a spring or flowing well occurs, the Technical Group shall determine whether the decrease corresponds to changes in groundwater pumping and runoff. If, on the basis of qualitatively evaluating the data, it appears that the decreased flow corresponds with increased pumping and decreased runoff, the Technical Group shall conduct a quantitative analysis of the data, using one or both of the methods described below, or any other method developed by the Technical Group:
-
->+ The Technical Group shall perform a regression analysis of the relevant groundwater level, spring flow, runoff/recharge, and pumping data associated with the site (an example of applying this technique is found in the Technical Group’s analysis of the water flow decrease at Reinhackel Spring).
-
->+ The Technical Group shall use the groundwater model of the area in question as a supplement to the regression analysis, or as a substitute for the regression analysis if the data are inadequate to develop a regression model. The model would be applied by evaluating groundwater level and spring flow changes in the area under the relevant runoff/recharge conditions that existed under pumping and nonpumping scenarios. For example, the runoff/recharge conditions that existed during the period that the suspected impact occurred would be quantified and entered into the model. The pumping that occurred at that time would also be entered. Results of this run would be compared to a run with the identical runoff/recharge conditions and no pumping. Evaluation of the results would include an analysis of the difference in water levels and/or spring flow in the area to determine if the change that is calculated by the model is sufficient to conclude a pumping related impact, given the assumptions and limitations of the model."
 
